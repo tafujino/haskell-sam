@@ -147,7 +147,7 @@ appendAt loc x = loc %~ (|> x)
 ---
 
 headerEmptyLineP :: HeaderState -> Parser HeaderState
-headerEmptyLineP = (endOfLine $>)
+headerEmptyLineP (HeaderState header lineNo) = skipSpace *> endOfLine $> HeaderState header (lineNo + 1)
 
 ---
 
