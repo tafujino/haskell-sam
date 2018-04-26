@@ -28,7 +28,7 @@ import qualified Bio.Sam.Cigar as C
 
 (<&&>) :: Applicative f => f Bool -> f Bool -> f Bool
 (<&&>) = liftA2 (&&)
-infixr 3 <&&>  
+infixr 3 <&&>
 
 (<||>) :: Applicative f => f Bool -> f Bool -> f Bool
 (<||>) = liftA2 (||)
@@ -109,11 +109,11 @@ updateMany update = liftM2 mplus (update >=> updateMany update) return
 updateAlt :: [a -> Parser a] -> a -> Parser a
 updateAlt = foldl1 $ liftA2 (<|>)
 
-isHexChar :: Char -> Bool
-isHexChar = isDigit <||> 'A' <-> 'F' <||> 'a' <-> 'f'
+isHex :: Char -> Bool
+isHex = isDigit <||> 'A' <-> 'F' <||> 'a' <-> 'f'
 
 isNucleotideBaseChar :: Char -> Bool
-isNucleotideBaseChar = inClass' "ACMGRSVTWYHKDBN"  
+isNucleotideBaseChar = inClass' "ACMGRSVTWYHKDBN"
 
 anyFieldChar :: Char -> Bool
 anyFieldChar = (/= '\t') <&&> (/= '\r') <&&> (/= '\n')
@@ -184,7 +184,7 @@ headerRawFieldP :: Lens' a (Seq RawField) -> a -> Parser a
 headerRawFieldP loc state = do
   x <- rawFieldP
   return $ state & loc %~ (|> x)
-  
+
 enumP :: [(String, a)] -> Parser a
 enumP = foldl1 (<|>) . map (\(str, val) -> string (B8.pack str) $> val)
 
@@ -193,11 +193,10 @@ versionP = headerMaybeFieldP version "VN" $ digitString <++> char '.' <:> digitS
   where digitString = B8.unpack <$> takeWhile1 isDigit
 
 sortOrderP :: Header -> Parser Header
-sortOrderP = headerFieldP sortOrder isNothing "SO" $
-             Just <$> enumP [("unknown",    UnknownOrder   ),
-                             ("unsorted",   UnsortedOrder  ),
-                             ("queryname",  QueryNameOrder ),
-                             ("coordinate", CoordinateOrder)]
+sortOrderP = headerMaybeFieldP sortOrder "SO" $ enumP [("unknown",    UnknownOrder   ),
+                                                       ("unsorted",   UnsortedOrder  ),
+                                                       ("queryname",  QueryNameOrder ),
+                                                       ("coordinate", CoordinateOrder)]
 
 groupingP :: Header -> Parser Header
 groupingP = headerMaybeFieldP grouping "GO" $ enumP [("none",      NoGroup       ),
@@ -238,7 +237,7 @@ refAltLocusP :: Reference -> Parser Reference
 refAltLocusP = headerMaybeFieldP altLocus "AH" $ starOr (Just <$> anyFieldStringP)
 
 refAltRefNamesP :: Reference -> Parser Reference
-refAltRefNamesP = headerListFieldP altRefNames "AN" $ flip sepBy1 (char ',') $
+refAltRefNamesP = headerListFieldP altRefNames "AN" $ (`sepBy1` char ',') $
                   satisfy (isDigit <||> isAlpha_ascii) <:>
                   (B8.unpack <$> takeWhile (isDigit <||> isAlpha_ascii <||> inClass' "*+.@_|-"))
 
@@ -246,7 +245,7 @@ refAssemblyIDP :: Reference -> Parser Reference
 refAssemblyIDP = headerMaybeFieldP assemblyID "AS" anyFieldStringP
 
 refMD5P :: Reference -> Parser Reference
-refMD5P = headerMaybeFieldP md5 "M5" $ B8.unpack <$> takeWhile isHexChar
+refMD5P = headerMaybeFieldP md5 "M5" $ B8.unpack <$> takeWhile isHex
 
 refSpeciesP :: Reference -> Parser Reference
 refSpeciesP = headerMaybeFieldP species "SP" anyFieldStringP
@@ -382,7 +381,7 @@ headerCommentLineP = headerLineP
                      (flip const)
                      [(tabP *> A.skipWhile isEndOfLine $>) :: Header -> Parser Header]
 
------  
+-----
 
 -- should check uniqueness of read group ID
 -- should check if @PG-PP refers to any @PG-ID
@@ -492,7 +491,7 @@ optStringP = opt1P 'Z' $ AlnOptString . B8.unpack <$> takeWhile (' ' <-> '~')
 
 optByteArrayP :: Parser AlnOpt
 optByteArrayP = opt1P 'H' $ do
-  (result, invalid) <- decode <$> takeWhile isHexChar
+  (result, invalid) <- decode <$> takeWhile isHex
   -- function 'hexadecimal' outputs a variable of class Integral, but in this case
   -- outputting ByteString may be more preferable
   -- when invalid characters exist or the length is odd, this gives mzero (without error messages)
@@ -528,17 +527,17 @@ restoreLongCigars aln = maybe aln updateAln optCigars
     (optCigars, restOpts) = findOptCigars $ aln ^. opt
 
     seqLen :: Int
-    seqLen = maybe err length $ aln ^. seq 
+    seqLen = maybe err length $ aln ^. seq
       where err = error "sequence is empty. cannot determine the length of the sequence"
 
     isCigarDummy :: Maybe [C.Cigar] -> Bool
     isCigarDummy (Just (C.Cigar seqLen C.SoftClip:_)) = True
     isCigarDummy _ = False
-    
+
     updateAln :: [C.Cigar] -> Aln
-    updateAln c = if isCigarDummy $ aln ^. cigars 
+    updateAln c = if isCigarDummy $ aln ^. cigars
                     then aln & cigars .~ Just c
-                             & opt    .~ restOpts 
+                             & opt    .~ restOpts
                     else error "cannot replace CIGAR field with CIGARs in optional \"CG\" field"
 
 -- | find an optional CG tag from optional fields and returns CIGARs and rest of optional fields
@@ -567,5 +566,4 @@ samParser = Sam <$>
             headerParser <*>
             (restoreLongCigars <$> alnParser) `sepBy` many endOfLine <*
             option () endOfLine -- the last EOL is not necessarily required
-            <* endOfInput 
-
+            <* endOfInput
