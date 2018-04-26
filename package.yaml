@@ -1,0 +1,47 @@
+name:                sam
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/githubuser/sam#readme
+license:             BSD3
+author:              Author name here
+maintainer:          example@example.com
+copyright:           2018 Author name here
+category:            Web
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - attoparsec
+  - bytestring
+  - base16-bytestring
+  - conduit
+  - conduit-extra
+  - data-default
+  - containers
+  - generic-deriving
+  - lens
+#  - doctest
+
+tests:
+  sam-test:
+    main:                Spec.hs
+    source-dirs:         test
+#    ghc-options:
+#    - -threaded
+#    - -rtsopts
+#    - -with-rtsopts=-N
+    dependencies:
+    - sam
+## for doctest    
+#  test:
+#    main: Main.hs
+#    source-dirs: test
+
+library:
+  exposed-modules:
+     - Bio.Sam.SamParser
+     - Bio.Sam.Sam     
+     - Bio.Sam.Cigar     
+  source-dirs: lib
