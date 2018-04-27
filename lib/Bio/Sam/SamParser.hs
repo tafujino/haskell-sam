@@ -17,7 +17,7 @@ import Data.Word
 import Data.Bits
 import Data.Maybe
 import Data.Default
-import Data.Sequence hiding (null, length)
+import Data.Sequence hiding (length, null)
 import qualified Data.ByteString.Char8 as B8
 import Data.ByteString.Base16
 import qualified Data.Attoparsec.ByteString as A
@@ -42,6 +42,7 @@ asciiRange x y = (x <=) <&&> (<= y)
 infix 4 <->
 
 -- | possibly faster implementation of inClass (range notation is unsupported)
+-- use Template Haskell for much faster implementation?
 inClass' :: String -> Char -> Bool
 inClass' = foldl1 (<||>) . map (==)
 
@@ -299,7 +300,7 @@ readGroupFlowOrderP = headerMaybeFieldP flowOrder "FO" $
                       starOr $ Just <$> many1 (satisfy isNucleotideBaseChar)
 
 readGroupKeySeqP :: ReadGroup -> Parser ReadGroup
-readGroupKeySeqP = headerMaybeFieldP keySequence "KS" $ many1 (satisfy isNucleotideBaseChar)
+readGroupKeySeqP = headerMaybeFieldP keySequence "KS" $ many1 $ satisfy isNucleotideBaseChar
 
 readGroupLibraryP :: ReadGroup -> Parser ReadGroup
 readGroupLibraryP = headerMaybeFieldP keySequence "LB" anyFieldStringP
