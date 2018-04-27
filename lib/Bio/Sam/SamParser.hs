@@ -380,7 +380,7 @@ headerCommentLineP = headerLineP
                      (const True)
                      (const True)
                      (flip const)
-                     [(tabP *> A.skipWhile isEndOfLine $>) :: Header -> Parser Header]
+                     [(tabP *> A.takeTill isEndOfLine $>) :: Header -> Parser Header]
 
 -----
 
