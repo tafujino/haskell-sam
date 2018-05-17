@@ -16,8 +16,6 @@ dependencies:
   - attoparsec
   - bytestring
   - base16-bytestring
-  - conduit
-  - conduit-extra
   - data-default
   - containers
   - generic-deriving
@@ -33,8 +31,10 @@ tests:
 #    - -rtsopts
 #    - -with-rtsopts=-N
     dependencies:
+    - conduit
+    - conduit-extra
     - sam
-## for doctest    
+## for doctest
 #  test:
 #    main: Main.hs
 #    source-dirs: test
@@ -42,6 +42,6 @@ tests:
 library:
   exposed-modules:
      - Bio.Sam.SamParser
-     - Bio.Sam.Sam     
-     - Bio.Sam.Cigar     
+     - Bio.Sam.Sam
+     - Bio.Sam.Cigar
   source-dirs: lib
