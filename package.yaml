@@ -20,6 +20,8 @@ dependencies:
   - containers
   - generic-deriving
   - lens
+  - conduit
+  - conduit-extra
 #  - doctest
 
 tests:
@@ -41,7 +43,8 @@ tests:
 
 library:
   exposed-modules:
-     - Bio.Sam.SamParser
      - Bio.Sam.Sam
      - Bio.Sam.Cigar
+     - Bio.Sam.IO
+     - Bio.Sam.Parse
   source-dirs: lib

@@ -2,7 +2,7 @@
 {-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Bio.Sam.SamParser
+module Bio.Sam.Parse
   (samParser
   )
 where
