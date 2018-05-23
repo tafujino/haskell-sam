@@ -22,37 +22,10 @@ import qualified Data.ByteString.Char8 as B8
 import Data.ByteString.Base16
 import qualified Data.Attoparsec.ByteString as A
 import Data.Attoparsec.ByteString.Char8
+import Data.Attoparsec.Applicative
 import GHC.Float
 import Bio.Sam.Sam
 import qualified Bio.Sam.Cigar as C
-
-(<&&>) :: Applicative f => f Bool -> f Bool -> f Bool
-(<&&>) = liftA2 (&&)
-infixr 3 <&&>
-
-(<||>) :: Applicative f => f Bool -> f Bool -> f Bool
-(<||>) = liftA2 (||)
-infixr 2 <||>
-
-asciiRange :: Char -> Char -> Char -> Bool
-asciiRange x y = (x <=) <&&> (<= y)
-
-(<->) :: Char -> Char -> Char -> Bool
-(<->) = asciiRange
-infix 4 <->
-
--- | possibly faster implementation of inClass (range notation is unsupported)
--- use Template Haskell for much faster implementation?
-inClass' :: String -> Char -> Bool
-inClass' = foldl1 (<||>) . map (==)
-
-(<:>) :: Applicative f => f a -> f [a] -> f [a]
-(<:>) = liftA2 (:)
-infixr 5 <:>
-
-(<++>) :: Applicative f => f [a] -> f [a] -> f [a]
-(<++>) = liftA2 (++)
-infixr 5 <++>
 
 -- functions for testing bitwise flags
 testFlag :: Int -> Aln -> Bool
