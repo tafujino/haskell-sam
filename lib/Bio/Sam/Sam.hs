@@ -10,6 +10,7 @@ import Data.Word
 import Bio.Sam.Cigar
 import Control.Lens
 import Data.Sequence
+import Data.Bits
 import Data.Default
 import GHC.Generics
 

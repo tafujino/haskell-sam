@@ -44,6 +44,7 @@ library:
   exposed-modules:
      - Bio.Sam.Sam
      - Bio.Sam.Cigar
+     - Bio.Sam.Flag
      - Bio.Sam.IO
      - Bio.Sam.Parse
   source-dirs: lib
