@@ -43,7 +43,7 @@ data RawField = RawField {
   _tagValue :: !String
   } deriving (Default, Generic, Show)
 
-makeLenses '' RawField
+makeLenses ''RawField
 
 data Reference = Reference {
   _refName      :: !String,
