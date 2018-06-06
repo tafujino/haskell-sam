@@ -9,9 +9,11 @@ import Data.Int
 import Data.Word
 import Bio.Sam.Cigar
 import Control.Lens
-import Data.Sequence
 import Data.Bits
 import Data.Default
+import Data.Sequence
+import Data.Time.Clock
+import Data.Time.ISO8601
 import GHC.Generics
 
 -- @CO (comment) lines are skipped
@@ -68,7 +70,7 @@ data ReadGroup = ReadGroup {
   _readGroupID        :: !String,
   _sequencingCenter   :: !(Maybe String),
   _readGroupDesc      :: !(Maybe String), -- may be encoded in UTF-8 (but is currently unsupported)
-  _date               :: !(Maybe String), -- should use Data.Time.ISO8601 in the future
+  _date               :: !(Maybe UTCTime),
   -- for flowOrder and keySequence, see https://sourceforge.net/p/samtools/mailman/message/28536780/
   -- flowOrder: Nothing        -> information not available
   --            Just (Nothing) -> /*/

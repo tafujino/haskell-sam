@@ -12,12 +12,14 @@ import Data.Functor
 import Control.Applicative
 import Control.Monad
 import Control.Lens hiding ((|>))
+import Data.Default
 import Data.Int
 import Data.Word
 import Data.Bits
 import Data.Maybe
-import Data.Default
 import Data.Sequence hiding (length, null)
+import Data.Time.Clock
+import Data.Time.ISO8601
 import qualified Data.ByteString.Char8 as B8
 import Data.ByteString.Base16
 import qualified Data.Attoparsec.ByteString as A
@@ -223,10 +225,8 @@ readGroupSeqCenterP = headerMaybeFieldP sequencingCenter "CN" anyFieldStringP
 readGroupDescP :: ReadGroup -> Parser ReadGroup
 readGroupDescP = headerMaybeFieldP readGroupDesc "DS" anyFieldStringP
 
--- currently does not check format (ISO8601 or date/time)
--- should use Data.Time.ISO8601
 readGroupDateP :: ReadGroup -> Parser ReadGroup
-readGroupDateP = headerMaybeFieldP date "DT" anyFieldStringP
+readGroupDateP = headerMaybeFieldP date "DT" $ maybe mzero return =<< parseISO8601 <$> anyFieldStringP
 
 readGroupFlowOrderP :: ReadGroup -> Parser ReadGroup
 readGroupFlowOrderP = headerMaybeFieldP flowOrder "FO" $
