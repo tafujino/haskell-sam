@@ -9,6 +9,7 @@ import Data.Int
 import Data.Word
 import Bio.Sam.Cigar
 import Control.Lens
+import Control.DeepSeq
 import Data.Bits
 import Data.Default
 import Data.Sequence
@@ -23,12 +24,16 @@ data SortOrder = UnknownOrder    |
                  UnsortedOrder   |
                  QueryNameOrder  |
                  CoordinateOrder
-               deriving (Eq, Show)
+               deriving (Eq, Generic, Show)
+
+instance NFData SortOrder
 
 data Grouping  = NoGroup        |
                  QueryGroup     |
                  ReferenceGroup
-               deriving (Eq, Show)
+               deriving (Eq, Generic, Show)
+
+instance NFData Grouping
 
 data Platform  = Capillary  |
                  LS454      |
@@ -38,13 +43,16 @@ data Platform  = Capillary  |
                  IonTorrent |
                  ONT        |
                  PacBio
-               deriving (Eq, Show)
+               deriving (Eq, Generic, Show)
+
+instance NFData Platform
 
 data RawField = RawField {
   _tagName  :: !String,
   _tagValue :: !String
-  } deriving (Default, Generic, Show)
+  } deriving (Default, Show, Generic)
 
+instance NFData RawField
 makeLenses ''RawField
 
 data Reference = Reference {
@@ -64,6 +72,7 @@ data Reference = Reference {
 --  
   } deriving (Default, Generic, Show)
 
+instance NFData Reference
 makeLenses ''Reference
 
 data ReadGroup = ReadGroup {
@@ -87,6 +96,7 @@ data ReadGroup = ReadGroup {
   _sample             :: !(Maybe String)
   } deriving (Default, Generic, Show)
 
+instance NFData ReadGroup
 makeLenses ''ReadGroup
 
 data Program = Program {
@@ -99,6 +109,7 @@ data Program = Program {
   _programOptFields :: !(Seq RawField)
   } deriving (Default, Generic, Show)
 
+instance NFData Program
 makeLenses ''Program
 
 data Header = Header {
@@ -111,6 +122,7 @@ data Header = Header {
   _programs        :: !(Seq Program)
   } deriving (Default, Generic, Show)
 
+instance NFData Header
 makeLenses ''Header
 
 data AlnOptValue =
@@ -131,13 +143,16 @@ data AlnOptValue =
   AlnOptInt32Array  [Int32]    |
   AlnOptUInt32Array [Word32]   |
   AlnOptFloatArray  [Float]
-  deriving Show
+  deriving (Generic, Show)
+
+instance NFData AlnOptValue
 
 data AlnOpt = AlnOpt {
   _alnOptTag   :: String,
   _alnOptValue :: AlnOptValue
-  } deriving Show
+  } deriving (Generic, Show)
 
+instance NFData AlnOpt
 makeLenses ''AlnOpt
 
 data Aln = Aln {
@@ -153,14 +168,16 @@ data Aln = Aln {
   _seq    :: !(Maybe String),
   _qual   :: !(Maybe String),
   _opt    :: ![AlnOpt]
-  } deriving Show
+  } deriving (Generic, Show)
 
+instance NFData Aln
 makeLenses ''Aln
 
 data Sam = Sam {
   _header :: Header,
   _alns   :: [Aln]
-  } deriving Show
+  } deriving (Generic, Show)
 
+instance NFData Sam
 makeLenses ''Sam
 

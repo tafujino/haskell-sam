@@ -20,6 +20,7 @@ dependencies:
   - conduit
   - conduit-extra
   - data-default
+  - deepseq
   - containers
   - generic-deriving
   - iso8601-time
