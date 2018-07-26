@@ -499,5 +499,5 @@ samParser :: Parser Sam
 samParser = Sam <$>
             headerParser <*>
             (restoreLongCigars <$> alnParser) `sepBy` many endOfLine <*
-            skipMany endOfLine -- the last EOL(s) are not necessarily required
+            option () (endOfLine <* skipSpace) -- the last EOL is not necessarily required
             <* endOfInput
