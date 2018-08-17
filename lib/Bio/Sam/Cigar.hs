@@ -8,8 +8,16 @@ import Control.DeepSeq
 import Control.Lens
 import GHC.Generics
 
---             'M'     'I'   'D'   'N'    'S'        'H'        'P'       '='     'X'
-data CigarOp = Match | Ins | Del | Skip | SoftClip | HardClip | Padding | Equal | NotEqual deriving (Eq, Generic, Show)
+data CigarOp = Match    | -- ^ 'M'
+               Ins      | -- ^ 'I'
+               Del      | -- ^ 'D'
+               Skip     | -- ^ 'N'
+               SoftClip | -- ^ 'S'
+               HardClip | -- ^ 'H'
+               Padding  | -- ^ 'P'
+               Equal    | -- ^ '='
+               NotEqual   -- ^ 'X'
+             deriving (Eq, Generic, Show)
 
 instance NFData CigarOp
 

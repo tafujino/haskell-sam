@@ -15,6 +15,7 @@ import Data.Default
 import Data.Sequence
 import Data.Time.Clock
 import Data.Time.ISO8601
+import Data.Text
 import GHC.Generics
 
 -- @CO (comment) lines are skipped
@@ -28,46 +29,46 @@ data SortOrder = UnknownOrder    |
 
 instance NFData SortOrder
 
-data Grouping  = NoGroup        |
-                 QueryGroup     |
-                 ReferenceGroup
-               deriving (Eq, Generic, Show)
+data Grouping = NoGroup        |
+                QueryGroup     |
+                ReferenceGroup
+              deriving (Eq, Generic, Show)
 
 instance NFData Grouping
 
-data Platform  = Capillary  |
-                 LS454      |
-                 Illumina   |
-                 SOLiD      |
-                 Helicos    |
-                 IonTorrent |
-                 ONT        |
-                 PacBio
-               deriving (Eq, Generic, Show)
+data Platform = Capillary  |
+                LS454      |
+                Illumina   |
+                SOLiD      |
+                Helicos    |
+                IonTorrent |
+                ONT        |
+                PacBio
+              deriving (Eq, Generic, Show)
 
 instance NFData Platform
 
 data RawField = RawField {
-  _tagName  :: !String,
-  _tagValue :: !String
+  _tagName  :: !ByteString,
+  _tagValue :: !ByteString
   } deriving (Default, Show, Generic)
 
 instance NFData RawField
 makeLenses ''RawField
 
 data Reference = Reference {
-  _refName      :: !String,
+  _refName      :: !ByteString,
   _refLen       :: !Int,
   -- altLocus: Nothing         -> is not an alternative,
   --           Just (Nothing)  -> is an alternative and the locus is unknown,
   --           Just (Just ...) -> is an alternative and the locus is known
   -- may be needed to be implemented using original type
-  _altLocus     :: !(Maybe (Maybe String)),
-  _altRefNames  :: ![String],
-  _assemblyID   :: !(Maybe String),
-  _md5          :: !(Maybe String),
-  _species      :: !(Maybe String),
-  _uri          :: !(Maybe String),
+  _altLocus     :: !(Maybe (Maybe ByteString)),
+  _altRefNames  :: ![ByteString],
+  _assemblyID   :: !(Maybe ByteString),
+  _md5          :: !(Maybe ByteString),
+  _species      :: !(Maybe ByteString),
+  _uri          :: !(Maybe ByteString),
   _refOptFields :: !(Seq RawField)
 --  
   } deriving (Default, Generic, Show)
@@ -76,36 +77,36 @@ instance NFData Reference
 makeLenses ''Reference
 
 data ReadGroup = ReadGroup {
-  _readGroupID        :: !String,
-  _sequencingCenter   :: !(Maybe String),
-  _readGroupDesc      :: !(Maybe String), -- may be encoded in UTF-8 (but is currently unsupported)
+  _readGroupID        :: !ByteString,
+  _sequencingCenter   :: !(Maybe ByteString),
+  _readGroupDesc      :: !(Maybe Text), -- may be encoded in UTF-8 (but is currently unsupported)
   _date               :: !(Maybe UTCTime),
   -- for flowOrder and keySequence, see https://sourceforge.net/p/samtools/mailman/message/28536780/
   -- flowOrder: Nothing        -> information not available
   --            Just (Nothing) -> /*/
   --            Just (Nothing) -> /[ACMGRSVTWYHKDBN]+/
-  _flowOrder          :: !(Maybe (Maybe String)),
-  _keySequence        :: !(Maybe String),
-  _library            :: !(Maybe String),
-  _program            :: !(Maybe String), -- ??? should contain program "name" or program "ID" ???
+  _flowOrder          :: !(Maybe (Maybe ByteString)),
+  _keySequence        :: !(Maybe ByteString),
+  _library            :: !(Maybe ByteString),
+  _program            :: !(Maybe ByteString), -- ??? should contain program "name" or program "ID" ???
   _medianInsert       :: !(Maybe Int),
   _platform           :: !(Maybe Platform),  
-  _platformModel      :: !(Maybe String),
-  _platformUnit       :: !(Maybe String),
+  _platformModel      :: !(Maybe ByteString),
+  _platformUnit       :: !(Maybe ByteString),
   _readGroupOptFields :: !(Seq RawField),
-  _sample             :: !(Maybe String)
+  _sample             :: !(Maybe ByteString)
   } deriving (Default, Generic, Show)
 
 instance NFData ReadGroup
 makeLenses ''ReadGroup
 
 data Program = Program {
-  _programID        :: !String,
-  _programName      :: !(Maybe String),
-  _commandLine      :: !(Maybe String), -- may be encoded in UTF-8 (but is currently unsupported)
-  _prevProgramID    :: !(Maybe String),
-  _programDesc      :: !(Maybe String),
-  _programVersion   :: !(Maybe String),
+  _programID        :: !ByteString,
+  _programName      :: !(Maybe ByteString),
+  _commandLine      :: !(Maybe Text), -- may be encoded in UTF-8 (but is currently unsupported)
+  _prevProgramID    :: !(Maybe ByteString),
+  _programDesc      :: !(Maybe Text),
+  _programVersion   :: !(Maybe ByteString),
   _programOptFields :: !(Seq RawField)
   } deriving (Default, Generic, Show)
 
@@ -113,7 +114,7 @@ instance NFData Program
 makeLenses ''Program
 
 data Header = Header {
-  _version         :: !(Maybe String),
+  _version         :: !(Maybe ByteString),
   _sortOrder       :: !(Maybe SortOrder),
   _grouping        :: !(Maybe Grouping),
   _optHeaderFields :: !(Seq RawField),
@@ -134,7 +135,7 @@ data AlnOptValue =
   AlnOptInt32       Int32      |
   AlnOptUInt32      Word32     | -- only for BAM
   AlnOptFloat       Float      |
-  AlnOptString      String     |
+  AlnOptString      ByteString |
   AlnOptByteArray   ByteString |
   AlnOptInt8Array   [Int8]     |
   AlnOptUInt8Array  [Word8]    |
@@ -148,7 +149,7 @@ data AlnOptValue =
 instance NFData AlnOptValue
 
 data AlnOpt = AlnOpt {
-  _alnOptTag   :: String,
+  _alnOptTag   :: ByteString,
   _alnOptValue :: AlnOptValue
   } deriving (Generic, Show)
 
@@ -158,15 +159,15 @@ makeLenses ''AlnOpt
 data Aln = Aln {
   _qname  :: !String,
   _flag   :: !Word16,
-  _rname  :: !(Maybe String),
-  _pos    :: !(Maybe Word32),
+  _rname  :: !(Maybe ByteString),
+  _pos    :: !(Maybe Word32), -- change to Int64
   _mapq   :: !(Maybe Word8),
   _cigars :: !(Maybe [Cigar]),
-  _rnext  :: !(Maybe String),
+  _rnext  :: !(Maybe ByteString),
   _pnext  :: !(Maybe Word32),
   _tlen   :: !Int32,
-  _seq    :: !(Maybe String),
-  _qual   :: !(Maybe String),
+  _seq    :: !(Maybe ByteString),
+  _qual   :: !(Maybe ByteString),
   _opt    :: ![AlnOpt]
   } deriving (Generic, Show)
 

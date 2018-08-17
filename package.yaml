@@ -19,13 +19,15 @@ dependencies:
   - base16-bytestring
   - conduit
   - conduit-extra
-  - data-default
+#  - data-default
+  - data-default-extra
   - deepseq
   - containers
   - generic-deriving
   - iso8601-time
   - lens
   - time
+  - text
 #  - doctest
 
 tests:
