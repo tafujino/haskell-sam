@@ -157,7 +157,7 @@ instance NFData AlnOpt
 makeLenses ''AlnOpt
 
 data Aln = Aln {
-  _qname  :: !String,
+  _qname  :: !ByteString,
   _flag   :: !Word16,
   _rname  :: !(Maybe ByteString),
   _pos    :: !(Maybe Word32), -- change to Int64

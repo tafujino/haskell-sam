@@ -365,8 +365,8 @@ validIf f x = guard (f x) >> return x
 tabP :: Parser Char
 tabP = char '\t'
 
-qnameP :: Parser String
-qnameP = B8.unpack <$> takeWhile ('!' <-> '?' <||> 'A' <-> '~')
+qnameP :: Parser B8.ByteString
+qnameP = takeWhile ('!' <-> '?' <||> 'A' <-> '~')
 
 flagP :: Parser Word16
 flagP = decimal
