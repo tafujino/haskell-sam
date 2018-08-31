@@ -48,7 +48,7 @@ tests:
 library:
   exposed-modules:
 #     - Bio.Sam.Sam
-     - Bio.Sam.StrictSam     
+     - Bio.Sam.RawSam     
      - Bio.Sam.Cigar
      - Bio.Sam.Flag
      - Bio.Sam.IO

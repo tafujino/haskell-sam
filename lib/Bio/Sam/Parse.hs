@@ -3,13 +3,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Bio.Sam.Parse
-  (strictSamParser
+  (rawSamParser
   )
 where
 
 import Prelude hiding (seq, take, takeWhile)
 import Bio.Sam.Header
-import Bio.Sam.StrictSam
+import Bio.Sam.RawSam
 import Control.Applicative
 import Control.Monad
 import Control.Lens hiding ((|>))
@@ -343,8 +343,8 @@ headerParser = runHeader <$>
 -- alignment parser
 -- =============================================================================
 
-alnParser :: Parser StrictAln
-alnParser = StrictAln <$>
+alnParser :: Parser Aln
+alnParser = Aln <$>
             qnameP  <* tabP <*>
             flagP   <* tabP <*>
             rnameP  <* tabP <*>
@@ -416,23 +416,23 @@ seqP = starOr $ Just <$> takeWhile1 (isAlpha_ascii <||> (== '=') <||> (== '.'))
 qualP :: Parser (Maybe B8.ByteString)
 qualP = starOr $ Just <$> takeWhile1 ('!' <-> '~')
 
-opt1P :: Char -> Parser StrictAlnOptValue -> Parser StrictAlnOpt
-opt1P c p = StrictAlnOpt <$> tagP <* char ':' <* char c <* char ':' <*> p
+opt1P :: Char -> Parser AlnOptValue -> Parser AlnOpt
+opt1P c p = AlnOpt <$> tagP <* char ':' <* char c <* char ':' <*> p
   where tagP = B8.pack <$> satisfy isAlpha_ascii <:> satisfy (isAlpha_ascii <||> isDigit) <:> pure []
 
-optCharP :: Parser StrictAlnOpt
-optCharP = opt1P 'A' $ StrictAlnOptChar <$> anyChar
+optCharP :: Parser AlnOpt
+optCharP = opt1P 'A' $ AlnOptChar <$> anyChar
 
-optIntP :: Parser StrictAlnOpt
-optIntP = opt1P 'i' $ StrictAlnOptInt32 <$> signed decimal
+optIntP :: Parser AlnOpt
+optIntP = opt1P 'i' $ AlnOptInt32 <$> signed decimal
 
-optFloatP :: Parser StrictAlnOpt
-optFloatP = opt1P 'f' $ StrictAlnOptFloat . double2Float <$> signed double
+optFloatP :: Parser AlnOpt
+optFloatP = opt1P 'f' $ AlnOptFloat . double2Float <$> signed double
 
-optStringP :: Parser StrictAlnOpt
-optStringP = opt1P 'Z' $ StrictAlnOptString <$> takeWhile (' ' <-> '~')
+optStringP :: Parser AlnOpt
+optStringP = opt1P 'Z' $ AlnOptString <$> takeWhile (' ' <-> '~')
 
-optByteArrayP :: Parser StrictAlnOpt
+optByteArrayP :: Parser AlnOpt
 optByteArrayP = opt1P 'H' $ do
   (result, invalid) <- decode <$> takeWhile isHex
   -- function 'hexadecimal' outputs a variable of class Integral, but in this case
@@ -440,23 +440,23 @@ optByteArrayP = opt1P 'H' $ do
   -- when invalid characters exist or the length is odd, this gives mzero (without error messages)
   -- see https://hackage.haskell.org/package/attoparsec-0.13.2.2/docs/Data-Attoparsec-Internal-Types.html#t:Parser
   guard $ B8.null invalid
-  return $ StrictAlnOptByteArray result
+  return $ AlnOptByteArray result
 
-optArrayP :: Parser StrictAlnOpt
+optArrayP :: Parser AlnOpt
 optArrayP = opt1P 'B' $
-  foldl1 (<|>) [valueP 'c' StrictAlnOptInt8Array  $ signed decimal,
-                valueP 'C' StrictAlnOptUInt8Array   decimal,
-                valueP 's' StrictAlnOptInt16Array $ signed decimal,
-                valueP 'S' StrictAlnOptUInt16Array  decimal,
-                valueP 'i' StrictAlnOptInt32Array $ signed decimal,
-                valueP 'I' StrictAlnOptUInt32Array  decimal,
-                valueP 'f' StrictAlnOptFloatArray $ double2Float <$> signed double
+  foldl1 (<|>) [valueP 'c' AlnOptInt8Array  $ signed decimal,
+                valueP 'C' AlnOptUInt8Array   decimal,
+                valueP 's' AlnOptInt16Array $ signed decimal,
+                valueP 'S' AlnOptUInt16Array  decimal,
+                valueP 'i' AlnOptInt32Array $ signed decimal,
+                valueP 'I' AlnOptUInt32Array  decimal,
+                valueP 'f' AlnOptFloatArray $ double2Float <$> signed double
                ]
   where
-    valueP :: Char -> ([a] -> StrictAlnOptValue) -> Parser a -> Parser StrictAlnOptValue
+    valueP :: Char -> ([a] -> AlnOptValue) -> Parser a -> Parser AlnOptValue
     valueP c t p = char c *> (t <$> many (char ',' *> p))
 
-optP :: Parser [StrictAlnOpt]
+optP :: Parser [AlnOpt]
 optP = many $ tabP *> foldl1 (<|>) [optCharP,
                                     optIntP,
                                     optFloatP,
@@ -464,7 +464,7 @@ optP = many $ tabP *> foldl1 (<|>) [optCharP,
                                     optByteArrayP,
                                     optArrayP]
 
-restoreLongCigars :: StrictAln -> StrictAln
+restoreLongCigars :: Aln -> Aln
 restoreLongCigars aln = maybe aln updateAln optCigars
   where
     (optCigars, restOpts) = findOptCigars $ aln ^. opt
@@ -477,17 +477,17 @@ restoreLongCigars aln = maybe aln updateAln optCigars
     isCigarDummy (Just (CIG.Cigar seqLen CIG.SoftClip:_)) = True
     isCigarDummy _ = False
 
-    updateAln :: [CIG.Cigar] -> StrictAln
+    updateAln :: [CIG.Cigar] -> Aln
     updateAln c = if isCigarDummy $ aln ^. cigars
                     then aln & cigars .~ Just c
                              & opt    .~ restOpts
                     else error "cannot replace CIGAR field with CIGARs in optional \"CG\" field"
 
 -- | find an optional CG tag from optional fields and returns CIGARs and rest of optional fields
-findOptCigars :: [StrictAlnOpt] -> (Maybe [CIG.Cigar], [StrictAlnOpt])
+findOptCigars :: [AlnOpt] -> (Maybe [CIG.Cigar], [AlnOpt])
 findOptCigars [] = (Nothing, [])
-findOptCigars (StrictAlnOpt "CG" (StrictAlnOptUInt32Array values):xs) = (Just $ map decodeOptCigar values, xs)
-findOptCigars (StrictAlnOpt "CG" _:_) = error "\"CG\" tag should have UInt32 Array as its value"
+findOptCigars (AlnOpt "CG" (AlnOptUInt32Array values):xs) = (Just $ map decodeOptCigar values, xs)
+findOptCigars (AlnOpt "CG" _:_) = error "\"CG\" tag should have UInt32 Array as its value"
 findOptCigars (x:xs) = (cs, x:xs') where (cs, xs') = findOptCigars xs
 
 decodeOptCigar :: Word32 -> CIG.Cigar
@@ -504,8 +504,8 @@ decodeOptCigar x = CIG.Cigar (fromIntegral $ x `shiftR` 4) op
              7 -> CIG.Equal
              8 -> CIG.NotEqual
 
-strictSamParser :: Parser StrictSam
-strictSamParser = StrictSam <$>
+rawSamParser :: Parser RawSam
+rawSamParser = RawSam <$>
                   headerParser <*>
                   (restoreLongCigars <$> alnParser) `sepBy` many endOfLine <* -- move this to StrictSam -> Sam conversion stage
                   option () (endOfLine <* skipSpace) -- the last EOL is not necessarily required

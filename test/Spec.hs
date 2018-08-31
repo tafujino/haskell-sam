@@ -1,7 +1,7 @@
-import Bio.Sam.StrictSam
+import Bio.Sam.RawSam
 import Bio.Sam.IO
 
 main :: IO ()
 main = do
-  sam <- readStrictSamFile "test/data/aln.sam"
+  sam <- readRawSamFile "test/data/aln.sam"
   print sam
