@@ -3,12 +3,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Bio.Sam.Parse
-  (samParser
+  (strictSamParser
   )
 where
 
 import Prelude hiding (seq, take, takeWhile)
-import Bio.Sam.Sam
+import Bio.Sam.Header
+import Bio.Sam.StrictSam
 import Control.Applicative
 import Control.Monad
 import Control.Lens hiding ((|>))
@@ -30,15 +31,15 @@ import Data.Attoparsec.ByteString.Char8
 import GHC.Float
 import qualified Bio.Sam.Cigar as CIG
 
---------------------------------------------------------------------------------
-
--- header parser
-
 type LineNo = Int
 data HeaderState = HeaderState {
   runHeader :: Header,
   runLineNo :: LineNo
   } deriving Show
+
+-- =============================================================================
+-- header parser
+-- =============================================================================
 
 updateMany :: (a -> Parser a) -> a -> Parser a
 updateMany update = liftM2 mplus (update >=> updateMany update) return
@@ -84,12 +85,12 @@ headerLineP tag lineNoCond valueCond update parsers (HeaderState header lineNo) 
 appendAt :: Lens' a (Seq b) -> b -> a -> a
 appendAt loc x = loc %~ (|> x)
 
----
+--------------------------------------------------------------------------------
 
 headerEmptyLineP :: HeaderState -> Parser HeaderState
 headerEmptyLineP (HeaderState header lineNo) = skipSpace *> endOfLine $> HeaderState header (lineNo + 1)
 
----
+--------------------------------------------------------------------------------
 
 headerTopLineP :: HeaderState -> Parser HeaderState
 headerTopLineP = headerLineP
@@ -150,7 +151,7 @@ groupingP = headerMaybeFieldP grouping "GO" $ enumP [("none",      NoGroup      
 optHeaderFieldP :: Header -> Parser Header
 optHeaderFieldP = headerRawFieldP optHeaderFields
 
------
+--------------------------------------------------------------------------------
 
 headerReferenceLineP :: HeaderState -> Parser HeaderState
 headerReferenceLineP = headerLineP
@@ -200,7 +201,7 @@ refURIP = headerMaybeFieldP uri "UR" anyFieldByteStringP -- for now, accepts any
 refOptFieldP :: Reference -> Parser Reference
 refOptFieldP = headerRawFieldP refOptFields
 
------
+--------------------------------------------------------------------------------
 
 headerReadGroupLineP :: HeaderState -> Parser HeaderState
 headerReadGroupLineP = headerLineP
@@ -275,7 +276,7 @@ readGroupSampleP = headerMaybeFieldP sample "SM" anyFieldByteStringP
 readGroupOptFieldP :: ReadGroup -> Parser ReadGroup
 readGroupOptFieldP = headerRawFieldP readGroupOptFields
 
------
+--------------------------------------------------------------------------------
 
 headerProgramLineP :: HeaderState -> Parser HeaderState
 headerProgramLineP = headerLineP
@@ -313,7 +314,7 @@ programVersionP = headerMaybeFieldP programVersion "VN" anyFieldByteStringP
 programOptFieldP :: Program -> Parser Program
 programOptFieldP = headerRawFieldP programOptFields
 
------
+
 
 headerCommentLineP :: HeaderState -> Parser HeaderState
 headerCommentLineP = headerLineP
@@ -323,7 +324,7 @@ headerCommentLineP = headerLineP
                      (flip const)
                      [(tabP *> takeTill isEndOfLine' $>) :: Header -> Parser Header]
 
------
+--------------------------------------------------------------------------------
 
 -- should check uniqueness of read group ID
 -- should check if @PG-PP refers to any @PG-ID
@@ -338,10 +339,12 @@ headerParser = runHeader <$>
                            headerEmptyLineP])
                (HeaderState def 1)
 
+-- =============================================================================
 -- alignment parser
+-- =============================================================================
 
-alnParser :: Parser Aln
-alnParser = Aln <$>
+alnParser :: Parser StrictAln
+alnParser = StrictAln <$>
             qnameP  <* tabP <*>
             flagP   <* tabP <*>
             rnameP  <* tabP <*>
@@ -413,23 +416,23 @@ seqP = starOr $ Just <$> takeWhile1 (isAlpha_ascii <||> (== '=') <||> (== '.'))
 qualP :: Parser (Maybe B8.ByteString)
 qualP = starOr $ Just <$> takeWhile1 ('!' <-> '~')
 
-opt1P :: Char -> Parser AlnOptValue -> Parser AlnOpt
-opt1P c p = AlnOpt <$> tagP <* char ':' <* char c <* char ':' <*> p
+opt1P :: Char -> Parser StrictAlnOptValue -> Parser StrictAlnOpt
+opt1P c p = StrictAlnOpt <$> tagP <* char ':' <* char c <* char ':' <*> p
   where tagP = B8.pack <$> satisfy isAlpha_ascii <:> satisfy (isAlpha_ascii <||> isDigit) <:> pure []
 
-optCharP :: Parser AlnOpt
+optCharP :: Parser StrictAlnOpt
 optCharP = opt1P 'A' $ AlnOptChar <$> anyChar
 
-optIntP :: Parser AlnOpt
+optIntP :: Parser StrictAlnOpt
 optIntP = opt1P 'i' $ AlnOptInt32 <$> signed decimal
 
-optFloatP :: Parser AlnOpt
+optFloatP :: Parser StrictAlnOpt
 optFloatP = opt1P 'f' $ AlnOptFloat . double2Float <$> signed double
 
-optStringP :: Parser AlnOpt
+optStringP :: Parser StrictAlnOpt
 optStringP = opt1P 'Z' $ AlnOptString <$> takeWhile (' ' <-> '~')
 
-optByteArrayP :: Parser AlnOpt
+optByteArrayP :: Parser StrictAlnOpt
 optByteArrayP = opt1P 'H' $ do
   (result, invalid) <- decode <$> takeWhile isHex
   -- function 'hexadecimal' outputs a variable of class Integral, but in this case
@@ -439,7 +442,7 @@ optByteArrayP = opt1P 'H' $ do
   guard $ B8.null invalid
   return $ AlnOptByteArray result
 
-optArrayP :: Parser AlnOpt
+optArrayP :: Parser StrictAlnOpt
 optArrayP = opt1P 'B' $
   foldl1 (<|>) [valueP 'c' AlnOptInt8Array  $ signed decimal,
                 valueP 'C' AlnOptUInt8Array   decimal,
@@ -450,10 +453,10 @@ optArrayP = opt1P 'B' $
                 valueP 'f' AlnOptFloatArray $ double2Float <$> signed double
                ]
   where
-    valueP :: Char -> ([a] -> AlnOptValue) -> Parser a -> Parser AlnOptValue
+    valueP :: Char -> ([a] -> StrictAlnOptValue) -> Parser a -> Parser StrictAlnOptValue
     valueP c t p = char c *> (t <$> many (char ',' *> p))
 
-optP :: Parser [AlnOpt]
+optP :: Parser [StrictAlnOpt]
 optP = many $ tabP *> foldl1 (<|>) [optCharP,
                                     optIntP,
                                     optFloatP,
@@ -461,7 +464,7 @@ optP = many $ tabP *> foldl1 (<|>) [optCharP,
                                     optByteArrayP,
                                     optArrayP]
 
-restoreLongCigars :: Aln -> Aln
+restoreLongCigars :: StrictAln -> StrictAln
 restoreLongCigars aln = maybe aln updateAln optCigars
   where
     (optCigars, restOpts) = findOptCigars $ aln ^. opt
@@ -474,17 +477,17 @@ restoreLongCigars aln = maybe aln updateAln optCigars
     isCigarDummy (Just (CIG.Cigar seqLen CIG.SoftClip:_)) = True
     isCigarDummy _ = False
 
-    updateAln :: [CIG.Cigar] -> Aln
+    updateAln :: [CIG.Cigar] -> StrictAln
     updateAln c = if isCigarDummy $ aln ^. cigars
                     then aln & cigars .~ Just c
                              & opt    .~ restOpts
                     else error "cannot replace CIGAR field with CIGARs in optional \"CG\" field"
 
 -- | find an optional CG tag from optional fields and returns CIGARs and rest of optional fields
-findOptCigars :: [AlnOpt] -> (Maybe [CIG.Cigar], [AlnOpt])
+findOptCigars :: [StrictAlnOpt] -> (Maybe [CIG.Cigar], [StrictAlnOpt])
 findOptCigars [] = (Nothing, [])
-findOptCigars (AlnOpt "CG" (AlnOptUInt32Array values):xs) = (Just $ map decodeOptCigar values, xs)
-findOptCigars (AlnOpt "CG" _:_) = error "\"CG\" tag should have UInt32 Array as its value"
+findOptCigars (StrictAlnOpt "CG" (AlnOptUInt32Array values):xs) = (Just $ map decodeOptCigar values, xs)
+findOptCigars (StrictAlnOpt "CG" _:_) = error "\"CG\" tag should have UInt32 Array as its value"
 findOptCigars (x:xs) = (cs, x:xs') where (cs, xs') = findOptCigars xs
 
 decodeOptCigar :: Word32 -> CIG.Cigar
@@ -501,9 +504,9 @@ decodeOptCigar x = CIG.Cigar (fromIntegral $ x `shiftR` 4) op
              7 -> CIG.Equal
              8 -> CIG.NotEqual
 
-samParser :: Parser Sam
-samParser = Sam <$>
-            headerParser <*>
-            (restoreLongCigars <$> alnParser) `sepBy` many endOfLine <*
-            option () (endOfLine <* skipSpace) -- the last EOL is not necessarily required
-            <* endOfInput
+strictSamParser :: Parser StrictSam
+strictSamParser = StrictSam <$>
+                  headerParser <*>
+                  (restoreLongCigars <$> alnParser) `sepBy` many endOfLine <* -- move this to StrictSam -> Sam conversion stage
+                  option () (endOfLine <* skipSpace) -- the last EOL is not necessarily required
+                  <* endOfInput

@@ -1,13 +1,13 @@
 module Bio.Sam.IO
-  (readSamFile
+  (readStrictSamFile
   )
 where
 
 import Conduit
 import Data.Conduit.Attoparsec
 import Data.Attoparsec.ByteString.Char8
-import Bio.Sam.Sam
+import Bio.Sam.StrictSam
 import Bio.Sam.Parse
 
-readSamFile :: FilePath -> IO Sam
-readSamFile path = runConduitRes $ sourceFileBS path .| sinkParser samParser
+readStrictSamFile :: FilePath -> IO StrictSam
+readStrictSamFile path = runConduitRes $ sourceFileBS path .| sinkParser strictSamParser

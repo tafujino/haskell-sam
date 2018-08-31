@@ -4,7 +4,6 @@
 module Bio.Sam.Cigar
 where
 
-import Control.DeepSeq
 import Control.Lens
 import GHC.Generics
 
@@ -19,8 +18,6 @@ data CigarOp = Match    | -- ^ 'M'
                NotEqual   -- ^ 'X'
              deriving (Eq, Generic, Show)
 
-instance NFData CigarOp
-
 type CigarLen = Word
 
 data Cigar = Cigar {
@@ -28,5 +25,4 @@ data Cigar = Cigar {
   _cigarOp  :: !CigarOp
   } deriving (Eq, Generic, Show)
 
-instance NFData Cigar
 makeLenses ''Cigar

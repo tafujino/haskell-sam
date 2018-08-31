@@ -21,7 +21,7 @@ dependencies:
   - conduit-extra
 #  - data-default
   - data-default-extra
-  - deepseq
+#  - deepseq
   - containers
   - generic-deriving
   - iso8601-time
@@ -47,7 +47,8 @@ tests:
 
 library:
   exposed-modules:
-     - Bio.Sam.Sam
+#     - Bio.Sam.Sam
+     - Bio.Sam.StrictSam     
      - Bio.Sam.Cigar
      - Bio.Sam.Flag
      - Bio.Sam.IO
