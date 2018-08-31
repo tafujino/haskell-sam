@@ -421,16 +421,16 @@ opt1P c p = StrictAlnOpt <$> tagP <* char ':' <* char c <* char ':' <*> p
   where tagP = B8.pack <$> satisfy isAlpha_ascii <:> satisfy (isAlpha_ascii <||> isDigit) <:> pure []
 
 optCharP :: Parser StrictAlnOpt
-optCharP = opt1P 'A' $ AlnOptChar <$> anyChar
+optCharP = opt1P 'A' $ StrictAlnOptChar <$> anyChar
 
 optIntP :: Parser StrictAlnOpt
-optIntP = opt1P 'i' $ AlnOptInt32 <$> signed decimal
+optIntP = opt1P 'i' $ StrictAlnOptInt32 <$> signed decimal
 
 optFloatP :: Parser StrictAlnOpt
-optFloatP = opt1P 'f' $ AlnOptFloat . double2Float <$> signed double
+optFloatP = opt1P 'f' $ StrictAlnOptFloat . double2Float <$> signed double
 
 optStringP :: Parser StrictAlnOpt
-optStringP = opt1P 'Z' $ AlnOptString <$> takeWhile (' ' <-> '~')
+optStringP = opt1P 'Z' $ StrictAlnOptString <$> takeWhile (' ' <-> '~')
 
 optByteArrayP :: Parser StrictAlnOpt
 optByteArrayP = opt1P 'H' $ do
@@ -440,17 +440,17 @@ optByteArrayP = opt1P 'H' $ do
   -- when invalid characters exist or the length is odd, this gives mzero (without error messages)
   -- see https://hackage.haskell.org/package/attoparsec-0.13.2.2/docs/Data-Attoparsec-Internal-Types.html#t:Parser
   guard $ B8.null invalid
-  return $ AlnOptByteArray result
+  return $ StrictAlnOptByteArray result
 
 optArrayP :: Parser StrictAlnOpt
 optArrayP = opt1P 'B' $
-  foldl1 (<|>) [valueP 'c' AlnOptInt8Array  $ signed decimal,
-                valueP 'C' AlnOptUInt8Array   decimal,
-                valueP 's' AlnOptInt16Array $ signed decimal,
-                valueP 'S' AlnOptUInt16Array  decimal,
-                valueP 'i' AlnOptInt32Array $ signed decimal,
-                valueP 'I' AlnOptUInt32Array  decimal,
-                valueP 'f' AlnOptFloatArray $ double2Float <$> signed double
+  foldl1 (<|>) [valueP 'c' StrictAlnOptInt8Array  $ signed decimal,
+                valueP 'C' StrictAlnOptUInt8Array   decimal,
+                valueP 's' StrictAlnOptInt16Array $ signed decimal,
+                valueP 'S' StrictAlnOptUInt16Array  decimal,
+                valueP 'i' StrictAlnOptInt32Array $ signed decimal,
+                valueP 'I' StrictAlnOptUInt32Array  decimal,
+                valueP 'f' StrictAlnOptFloatArray $ double2Float <$> signed double
                ]
   where
     valueP :: Char -> ([a] -> StrictAlnOptValue) -> Parser a -> Parser StrictAlnOptValue
@@ -486,7 +486,7 @@ restoreLongCigars aln = maybe aln updateAln optCigars
 -- | find an optional CG tag from optional fields and returns CIGARs and rest of optional fields
 findOptCigars :: [StrictAlnOpt] -> (Maybe [CIG.Cigar], [StrictAlnOpt])
 findOptCigars [] = (Nothing, [])
-findOptCigars (StrictAlnOpt "CG" (AlnOptUInt32Array values):xs) = (Just $ map decodeOptCigar values, xs)
+findOptCigars (StrictAlnOpt "CG" (StrictAlnOptUInt32Array values):xs) = (Just $ map decodeOptCigar values, xs)
 findOptCigars (StrictAlnOpt "CG" _:_) = error "\"CG\" tag should have UInt32 Array as its value"
 findOptCigars (x:xs) = (cs, x:xs') where (cs, xs') = findOptCigars xs
 

@@ -16,23 +16,23 @@ import Data.Text
 import GHC.Generics
 
 data StrictAlnOptValue =
-  AlnOptChar        Char       |
-  AlnOptInt         Int8       | -- only for BAM
-  AlnOptUInt8       Word8      | -- only for BAM
-  AlnOptInt16       Int16      | -- only for BAM
-  AlnOptUInt16      Word16     | -- only for BAM
-  AlnOptInt32       Int32      |
-  AlnOptUInt32      Word32     | -- only for BAM
-  AlnOptFloat       Float      |
-  AlnOptString      ByteString |
-  AlnOptByteArray   ByteString |
-  AlnOptInt8Array   [Int8]     |
-  AlnOptUInt8Array  [Word8]    |
-  AlnOptInt16Array  [Int16]    |
-  AlnOptUInt16Array [Word16]   |
-  AlnOptInt32Array  [Int32]    |
-  AlnOptUInt32Array [Word32]   |
-  AlnOptFloatArray  [Float]
+  StrictAlnOptChar        Char       |
+  StrictAlnOptInt         Int8       | -- only for BAM
+  StrictAlnOptUInt8       Word8      | -- only for BAM
+  StrictAlnOptInt16       Int16      | -- only for BAM
+  StrictAlnOptUInt16      Word16     | -- only for BAM
+  StrictAlnOptInt32       Int32      |
+  StrictAlnOptUInt32      Word32     | -- only for BAM
+  StrictAlnOptFloat       Float      |
+  StrictAlnOptString      ByteString |
+  StrictAlnOptByteArray   ByteString |
+  StrictAlnOptInt8Array   [Int8]     |
+  StrictAlnOptUInt8Array  [Word8]    |
+  StrictAlnOptInt16Array  [Int16]    |
+  StrictAlnOptUInt16Array [Word16]   |
+  StrictAlnOptInt32Array  [Int32]    |
+  StrictAlnOptUInt32Array [Word32]   |
+  StrictAlnOptFloatArray  [Float]
   deriving (Generic, Show)
 
 data StrictAlnOpt = StrictAlnOpt {
