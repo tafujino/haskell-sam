@@ -382,9 +382,6 @@ hasDummyCigars aln =
         err = error "sequence is empty. cannot determine the length of the sequence"
     Nothing -> False
 
-
-
-
 starOr :: Parser (Maybe a) -> Parser (Maybe a)
 starOr p = Nothing <$ "*"
            <|> p
