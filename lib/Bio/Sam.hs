@@ -45,7 +45,7 @@ data Aln = Aln {
   _tlen   :: !Int,
   _seq    :: !(Maybe DNASeq),
   _qual   :: !(Maybe ByteString),
-  _opt    :: ![AlnOpt]
+  _opt    :: !(V.Vector AlnOpt)
   } deriving (Generic, Show)
 
 makeLenses ''Aln

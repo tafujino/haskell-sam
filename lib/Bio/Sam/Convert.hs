@@ -42,18 +42,18 @@ fromRawAlnOpt rawAlnOpt =
 
 fromRawAln :: R.Aln -> S.Aln
 fromRawAln rawAln =
-  S.Aln { S._qname  = rawAln ^.  R.qname,
-          S._flag   = rawAln ^.  R.flag . to fromIntegral,
-          S._rname  = rawAln ^.  R.rname,
-          S._pos    = rawAln ^.  R.pos <&> (subtract 1 >>> fromIntegral),
-          S._mapq   = rawAln ^.  R.mapq <&> fromIntegral,
-          S._cigars = rawAln ^.  R.cigars,
-          S._rnext  = rawAln ^.  R.rnext,
-          S._pnext  = rawAln ^.  R.pnext <&> fromIntegral,
-          S._tlen   = rawAln ^.  R.tlen . to fromIntegral,
-          S._seq    = rawAln ^.  R.seq <&> fromByteString,
-          S._qual   = rawAln ^.  R.seq,
-          S._opt    = rawAln ^.. R.opt . traverse . to fromRawAlnOpt
+  S.Aln { S._qname  = rawAln ^. R.qname,
+          S._flag   = rawAln ^. R.flag . to fromIntegral,
+          S._rname  = rawAln ^. R.rname,
+          S._pos    = rawAln ^. R.pos <&> (subtract 1 >>> fromIntegral),
+          S._mapq   = rawAln ^. R.mapq <&> fromIntegral,
+          S._cigars = rawAln ^. R.cigars,
+          S._rnext  = rawAln ^. R.rnext,
+          S._pnext  = rawAln ^. R.pnext <&> fromIntegral,
+          S._tlen   = rawAln ^. R.tlen . to fromIntegral,
+          S._seq    = rawAln ^. R.seq <&> fromByteString,
+          S._qual   = rawAln ^. R.seq,
+          S._opt    = rawAln & toVectorOf (R.opt . traverse . to fromRawAlnOpt)
         }
 
 fromRawSam :: R.Sam -> S.Sam
