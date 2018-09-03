@@ -1,13 +1,21 @@
 module Bio.Sam.IO
-  (readRawSamFile
+  (readRawSamFile,
+   readSamFile
   )
 where
 
 import Conduit
 import Data.Conduit.Attoparsec
 import Data.Attoparsec.ByteString.Char8
-import Bio.Sam.RawSam
+import qualified Bio.Sam.RawSam as R
+import qualified Bio.Sam as S
 import Bio.Sam.Parse
 
-readRawSamFile :: FilePath -> IO RawSam
-readRawSamFile path = runConduitRes $ sourceFileBS path .| sinkParser rawSamParser
+readFileByParser :: Parser a -> FilePath -> IO a
+readFileByParser parser path = runConduitRes $ sourceFileBS path .| sinkParser parser
+
+readRawSamFile :: FilePath -> IO R.Sam
+readRawSamFile = readFileByParser rawSamParser
+
+readSamFile :: FilePath -> IO S.Sam
+readSamFile = readFileByParser samParser

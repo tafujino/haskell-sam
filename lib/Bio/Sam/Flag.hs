@@ -1,5 +1,4 @@
 module Bio.Sam.Flag
-  {-
   (hasMultipleSegments,
    isProperlyAligned,
    isUnmapped,
@@ -13,11 +12,9 @@ module Bio.Sam.Flag
    isDuplicate,
    isSupplementary
   )
--}
 where
 
-{-
-import Bio.Sam.Sam
+import Bio.Sam
 import Control.Lens
 import Data.Bits
 
@@ -59,4 +56,3 @@ isDuplicate = testFlag 0x400
 
 isSupplementary :: Aln -> Bool
 isSupplementary = testFlag 0x800
--}

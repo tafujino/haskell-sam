@@ -26,8 +26,11 @@ dependencies:
   - generic-deriving
   - iso8601-time
   - lens
+  - naseq
   - time
   - text
+  - vector
+  - vector-th-unbox
 #  - doctest
 
 tests:
@@ -47,8 +50,8 @@ tests:
 
 library:
   exposed-modules:
-#     - Bio.Sam.Sam
-     - Bio.Sam.RawSam     
+     - Bio.Sam
+     - Bio.Sam.RawSam
      - Bio.Sam.Cigar
      - Bio.Sam.Flag
      - Bio.Sam.IO

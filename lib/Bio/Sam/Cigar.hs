@@ -18,7 +18,7 @@ data CigarOp = Match    | -- ^ 'M'
                NotEqual   -- ^ 'X'
              deriving (Eq, Generic, Show)
 
-type CigarLen = Word
+type CigarLen = Int
 
 data Cigar = Cigar {
   _cigarLen :: !CigarLen,
