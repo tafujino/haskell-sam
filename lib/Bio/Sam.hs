@@ -10,7 +10,6 @@ import Bio.Sam.Cigar
 import Bio.Sam.Header
 import Control.Lens
 import Data.Default
-import Data.Sequence
 import Data.Text
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as UV
