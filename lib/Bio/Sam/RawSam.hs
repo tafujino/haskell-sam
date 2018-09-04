@@ -4,7 +4,7 @@
 module Bio.Sam.RawSam
 where
 
-import Bio.Sam.Cigar
+import qualified Bio.Sam.Cigar as CIG
 import Bio.Sam.Header
 import Data.ByteString.Char8
 import Data.Int
@@ -50,7 +50,7 @@ data Aln = Aln {
   _rname  :: !(Maybe ByteString),
   _pos    :: !(Maybe Word32), -- ^ 1-origin
   _mapq   :: !(Maybe Word8),
-  _cigars :: !(Maybe (V.Vector Cigar)), -- should change to unboxed vector? (needs a change to Cigar datatype defintion)
+  _cigars :: !(Maybe (UV.Vector CIG.Cigar)),
   _rnext  :: !(Maybe ByteString),
   _pnext  :: !(Maybe Word32),
   _tlen   :: !Int32,

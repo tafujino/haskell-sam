@@ -6,7 +6,7 @@ where
 
 import Data.ByteString.Char8
 import Bio.NASeq.DNASeq
-import Bio.Sam.Cigar
+import qualified Bio.Sam.Cigar as CIG
 import Bio.Sam.Header
 import Control.Lens
 import Data.Default
@@ -38,7 +38,7 @@ data Aln = Aln {
   _rname  :: !(Maybe ByteString),
   _pos    :: !(Maybe Int), -- ^ 0-origin
   _mapq   :: !(Maybe Int),
-  _cigars :: !(Maybe (V.Vector Cigar)),
+  _cigars :: !(Maybe (UV.Vector CIG.Cigar)),
   _rnext  :: !(Maybe ByteString),
   _pnext  :: !(Maybe Int),
   _tlen   :: !Int,

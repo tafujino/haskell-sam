@@ -366,7 +366,7 @@ alnParser = do
   (opt, mLongCigars) <- optP
   return $ fillLongCigars (alnWithoutOpt opt) mLongCigars
 
-fillLongCigars :: R.Aln -> Maybe (V.Vector CIG.Cigar) -> R.Aln
+fillLongCigars :: R.Aln -> Maybe (UV.Vector CIG.Cigar) -> R.Aln
 fillLongCigars aln Nothing           = aln
 fillLongCigars aln (Just longCigars) =
   if hasDummyCigars aln
@@ -376,7 +376,7 @@ fillLongCigars aln (Just longCigars) =
 hasDummyCigars :: R.Aln -> Bool
 hasDummyCigars aln =
   case aln ^. R.cigars of
-    Just cigars -> not (null cigars) && V.head cigars == CIG.Cigar seqLen CIG.SoftClip
+    Just cigars -> not (UV.null cigars) && UV.head cigars == CIG.Cigar seqLen CIG.softClip
       where
         seqLen = maybe err B8.length $ aln ^. R.seq
         err = error "sequence is empty. cannot determine the length of the sequence"
@@ -408,22 +408,10 @@ mapqP :: Parser (Maybe Word8)
 mapqP = starOr $ Just <$> decimal
 
 cigar1P :: Parser CIG.Cigar
-cigar1P = CIG.Cigar <$> decimal <*> (charToCigar <$> satisfy (inClass' "MIDNSHP=X"))
-  where
-    charToCigar chr = case chr of
-      'M' -> CIG.Match
-      'I' -> CIG.Ins
-      'D' -> CIG.Del
-      'N' -> CIG.Skip
-      'S' -> CIG.SoftClip
-      'H' -> CIG.HardClip
-      'P' -> CIG.Padding
-      '=' -> CIG.Equal
-      'X' -> CIG.NotEqual
-      _   -> error "invalid CIG.Cigar op char"
+cigar1P = CIG.Cigar <$> decimal <*> (CIG.fromChar <$> satisfy (inClass' "MIDNSHP=X"))
 
-cigarsP :: Parser (Maybe (V.Vector CIG.Cigar))
-cigarsP = starOr $ Just . V.fromList <$> many cigar1P
+cigarsP :: Parser (Maybe (UV.Vector CIG.Cigar))
+cigarsP = starOr $ Just . UV.fromList <$> many cigar1P
 
 rnextP :: Parser (Maybe B8.ByteString)
 rnextP = Just <$> "=" <|> rnameP
@@ -480,7 +468,7 @@ optArrayP = opt1P 'B' $
     valueP :: UV.Unbox a => Char -> (UV.Vector a -> R.AlnOptValue) -> Parser a -> Parser R.AlnOptValue
     valueP c t p = char c *> (t . UV.fromList <$> many (char ',' *> p))
 
-optP :: Parser (V.Vector R.AlnOpt, Maybe (V.Vector CIG.Cigar))
+optP :: Parser (V.Vector R.AlnOpt, Maybe (UV.Vector CIG.Cigar))
 optP = first V.fromList . findOptCigars <$> many (tabP *> foldl1 (<|>) [optCharP,
                                                                         optIntP,
                                                                         optFloatP,
@@ -489,25 +477,14 @@ optP = first V.fromList . findOptCigars <$> many (tabP *> foldl1 (<|>) [optCharP
                                                                         optArrayP])
 
 -- | find an optional CG tag from optional fields and returns CIGARs and rest of optional fields
-findOptCigars :: [R.AlnOpt] -> ([R.AlnOpt], Maybe (V.Vector CIG.Cigar))
+findOptCigars :: [R.AlnOpt] -> ([R.AlnOpt], Maybe (UV.Vector CIG.Cigar))
 findOptCigars [] = ([], Nothing)
-findOptCigars (R.AlnOpt "CG" (R.AlnOptUInt32Array values):xs) = (xs, Just $ V.map decodeOptCigar $ V.convert values)
+findOptCigars (R.AlnOpt "CG" (R.AlnOptUInt32Array values):xs) = (xs, Just $ UV.map decodeOptCigar values)
 findOptCigars (R.AlnOpt "CG" _:_) = error "\"CG\" tag should have UInt32 Array as its value"
 findOptCigars (x:xs) = (x:xs', cs) where (xs', cs) = findOptCigars xs
 
 decodeOptCigar :: Word32 -> CIG.Cigar
-decodeOptCigar x = CIG.Cigar (fromIntegral $ x `shiftR` 4) op
-  where
-    op = case x .&. 0xf of
-             0 -> CIG.Match
-             1 -> CIG.Ins
-             2 -> CIG.Del
-             3 -> CIG.Skip
-             4 -> CIG.SoftClip
-             5 -> CIG.HardClip
-             6 -> CIG.Padding
-             7 -> CIG.Equal
-             8 -> CIG.NotEqual
+decodeOptCigar x = CIG.Cigar (fromIntegral $ x `shiftR` 4) (fromIntegral $ x .&. 0xf)
 
 rawSamParser :: Parser R.Sam
 rawSamParser = R.Sam <$>
