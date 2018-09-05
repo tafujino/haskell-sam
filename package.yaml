@@ -12,9 +12,10 @@ extra-source-files:
 - README.md
 
 dependencies:
-  - base >= 4.7 && < 5
   - attoparsec
   - attoparsec-applicative
+  - base >= 4.7 && < 5
+  - bioseq
   - bytestring
   - base16-bytestring
   - conduit
@@ -26,7 +27,6 @@ dependencies:
   - generic-deriving
   - iso8601-time
   - lens
-  - naseq
   - time
   - text
   - vector

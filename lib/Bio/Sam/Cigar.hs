@@ -6,8 +6,8 @@
 module Bio.Sam.Cigar
 where
 
-import Data.Vector.Unboxed.Deriving
 import Control.Lens
+import Data.Vector.Unboxed.Deriving
 import GHC.Generics
 
 type CigarOp = Int
@@ -53,7 +53,7 @@ type CigarLen = Int
 data Cigar = Cigar {
   cigarLen :: !CigarLen,
   cigarOp  :: !CigarOp
-  } deriving (Eq, Generic, Show)
+  } deriving (Eq, Generic)
 
 makeLenses ''Cigar
 
@@ -61,6 +61,9 @@ derivingUnbox "Cigar"
   [t| Cigar -> (CigarLen, CigarOp) |]
   [e| \(Cigar len op) -> (len, op) |]
   [e| uncurry Cigar                |]
+
+instance Show Cigar where
+  show (Cigar len op) = show len ++ [toChar op]
 
 fromChar :: Char -> CigarOp
 fromChar 'M' = match
@@ -74,14 +77,15 @@ fromChar '=' = equal
 fromChar 'X' = notEqual
 fromChar c   = error $ "invalid CIGAR op: " ++ [c]
 
-toChar cig
-  | cig == match    = 'M'
-  | cig == ins      = 'I'
-  | cig == del      = 'D'
-  | cig == skip     = 'N'
-  | cig == softClip = 'S'
-  | cig == hardClip = 'H'
-  | cig == padding  = 'P'
-  | cig == equal    = '='
-  | cig == notEqual = 'X'
-  | otherwise       = error $ "invalid CIGAR: " ++ show cig
+toChar :: CigarOp -> Char
+toChar op
+  | op == match    = 'M'
+  | op == ins      = 'I'
+  | op == del      = 'D'
+  | op == skip     = 'N'
+  | op == softClip = 'S'
+  | op == hardClip = 'H'
+  | op == padding  = 'P'
+  | op == equal    = '='
+  | op == notEqual = 'X'
+  | otherwise       = error $ "invalid CIGAR: " ++ show op

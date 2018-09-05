@@ -5,7 +5,7 @@ module Bio.Sam
 where
 
 import Data.ByteString.Char8
-import Bio.NASeq.DNASeq
+import Bio.BioSeq.DNASeq
 import qualified Bio.Sam.Cigar as CIG
 import Bio.Sam.Header
 import Control.Lens

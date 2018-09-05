@@ -3,8 +3,8 @@ module Bio.Sam.Convert
   )
 where
 
-import Bio.NASeq.DNASeq
-import Bio.Sam.Header
+import Bio.BioSeq
+import Bio.BioSeq.DNASeq
 import qualified Bio.Sam.RawSam as R
 import qualified Bio.Sam as S
 import Control.Arrow
@@ -51,7 +51,7 @@ fromRawAln rawAln =
           S._rnext  = rawAln ^. R.rnext,
           S._pnext  = rawAln ^. R.pnext <&> fromIntegral,
           S._tlen   = rawAln ^. R.tlen . to fromIntegral,
-          S._seq    = rawAln ^. R.seq <&> fromByteString,
+          S._seq    = rawAln ^. R.seq <&> fromIupacByteString,
           S._qual   = rawAln ^. R.seq,
           S._opt    = rawAln & toVectorOf (R.opt . traverse . to fromRawAlnOpt)
         }
