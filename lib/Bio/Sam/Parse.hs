@@ -392,14 +392,14 @@ validIf f x = guard (f x) >> return x
 tabP :: Parser Char
 tabP = char '\t'
 
-qnameP :: Parser B8.ByteString
-qnameP = takeWhile ('!' <-> '?' <||> 'A' <-> '~')
+qnameP :: Parser T.Text
+qnameP = decodeUtf8 <$> takeWhile ('!' <-> '?' <||> 'A' <-> '~')
 
 flagP :: Parser Word16
 flagP = decimal
 
-rnameP :: Parser (Maybe B8.ByteString)
-rnameP = starOr $ Just <$> liftA2 B8.cons (satisfy ('!' <-> '<' <||> '>' <-> '~')) (takeWhile ('!' <-> '~'))
+rnameP :: Parser (Maybe T.Text)
+rnameP = starOr $ Just . decodeUtf8 <$> liftA2 B8.cons (satisfy ('!' <-> '<' <||> '>' <-> '~')) (takeWhile ('!' <-> '~'))
 
 posP :: Parser (Maybe Word32)
 posP = starOr $ validIf (/= 0) <$> decimal
@@ -413,8 +413,8 @@ cigar1P = CIG.Cigar <$> decimal <*> (CIG.fromChar <$> satisfy (inClass' "MIDNSHP
 cigarsP :: Parser (Maybe (UV.Vector CIG.Cigar))
 cigarsP = starOr $ Just . UV.fromList <$> many cigar1P
 
-rnextP :: Parser (Maybe B8.ByteString)
-rnextP = Just <$> "=" <|> rnameP
+rnextP :: Parser (Maybe T.Text)
+rnextP = Just . decodeUtf8 <$> "=" <|> rnameP
 
 pnextP :: Parser (Maybe Word32)
 pnextP = starOr $ validIf (/= 0) <$> decimal
@@ -430,7 +430,7 @@ qualP = starOr $ Just <$> takeWhile1 ('!' <-> '~')
 
 opt1P :: Char -> Parser R.AlnOptValue -> Parser R.AlnOpt
 opt1P c p = R.AlnOpt <$> tagP <* char ':' <* char c <* char ':' <*> p
-  where tagP = B8.pack <$> satisfy isAlpha_ascii <:> satisfy (isAlpha_ascii <||> isDigit) <:> pure []
+  where tagP = T.pack <$> satisfy isAlpha_ascii <:> satisfy (isAlpha_ascii <||> isDigit) <:> pure []
 
 optCharP :: Parser R.AlnOpt
 optCharP = opt1P 'A' $ R.AlnOptChar <$> anyChar

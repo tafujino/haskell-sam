@@ -12,7 +12,7 @@ import Data.Word
 import Control.Lens
 import Data.Default
 import Data.Sequence
-import Data.Text
+import qualified Data.Text as T
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as UV
 import GHC.Generics
@@ -38,20 +38,20 @@ data AlnOptValue =
   deriving (Generic, Show)
 
 data AlnOpt = AlnOpt {
-  _alnOptTag   :: !ByteString,
+  _alnOptTag   :: !T.Text,
   _alnOptValue :: !AlnOptValue
   } deriving (Generic, Show)
 
 makeLenses ''AlnOpt
 
 data Aln = Aln {
-  _qname  :: !ByteString,
+  _qname  :: !T.Text,
   _flag   :: !Word16,
-  _rname  :: !(Maybe ByteString),
+  _rname  :: !(Maybe T.Text),
   _pos    :: !(Maybe Word32), -- ^ 1-origin
   _mapq   :: !(Maybe Word8),
   _cigars :: !(Maybe (UV.Vector CIG.Cigar)),
-  _rnext  :: !(Maybe ByteString),
+  _rnext  :: !(Maybe T.Text),
   _pnext  :: !(Maybe Word32),
   _tlen   :: !Int32,
   _seq    :: !(Maybe ByteString),
