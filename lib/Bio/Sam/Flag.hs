@@ -22,37 +22,37 @@ testFlag :: Int -> Aln -> Bool
 testFlag n aln = testBit (aln ^. flag) n
 
 hasMultipleSegments :: Aln -> Bool
-hasMultipleSegments = testFlag 0x1
+hasMultipleSegments = testFlag 0
 
 isProperlyAligned :: Aln -> Bool
-isProperlyAligned = testFlag 0x2
+isProperlyAligned = testFlag 1
 
 isUnmapped :: Aln -> Bool
-isUnmapped = testFlag 0x4
+isUnmapped = testFlag 2
 
 isNextUnmapped :: Aln -> Bool
-isNextUnmapped = testFlag 0x8
+isNextUnmapped = testFlag 3
 
 isReverseComplement :: Aln -> Bool
-isReverseComplement = testFlag 0x10
+isReverseComplement = testFlag 4
 
 isNextReverseComplement :: Aln -> Bool
-isNextReverseComplement = testFlag 0x20
+isNextReverseComplement = testFlag 5
 
 isFirstSegment :: Aln -> Bool
-isFirstSegment = testFlag 0x40
+isFirstSegment = testFlag 6
 
 isLastSegment :: Aln -> Bool
-isLastSegment = testFlag 0x80
+isLastSegment = testFlag 7
 
 isSecondary :: Aln -> Bool
-isSecondary = testFlag 0x100
+isSecondary = testFlag 8
 
 hasNotPassedFilters :: Aln -> Bool
-hasNotPassedFilters = testFlag 0x200
+hasNotPassedFilters = testFlag 9
 
 isDuplicate :: Aln -> Bool
-isDuplicate = testFlag 0x400
+isDuplicate = testFlag 10
 
 isSupplementary :: Aln -> Bool
-isSupplementary = testFlag 0x800
+isSupplementary = testFlag 11
