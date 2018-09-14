@@ -51,9 +51,11 @@ tests:
 library:
   exposed-modules:
      - Bio.Sam
-     - Bio.Sam.RawSam
      - Bio.Sam.Cigar
+     - Bio.Sam.Convert
      - Bio.Sam.Flag
      - Bio.Sam.IO
      - Bio.Sam.Parse
+     - Bio.Sam.RawSam
+     - Bio.Sam.Util
   source-dirs: lib

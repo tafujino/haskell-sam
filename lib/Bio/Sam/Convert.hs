@@ -7,8 +7,10 @@ import Bio.BioSeq
 import Bio.BioSeq.DNASeq
 import qualified Bio.Sam.RawSam as R
 import qualified Bio.Sam as S
+import qualified Bio.Sam.Flag as FLAG
 import Control.Arrow
 import Control.Lens
+import Data.Maybe
 import Data.Text.Encoding
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as UV

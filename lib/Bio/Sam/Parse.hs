@@ -410,6 +410,7 @@ mapqP = starOr $ Just <$> decimal
 cigar1P :: Parser CIG.Cigar
 cigar1P = CIG.Cigar <$> decimal <*> (CIG.fromChar <$> satisfy (inClass' "MIDNSHP=X"))
 
+-- should make sure there exists at least one CIGAR if the filed is not '*'
 cigarsP :: Parser (Maybe (UV.Vector CIG.Cigar))
 cigarsP = starOr $ Just . UV.fromList <$> many cigar1P
 
