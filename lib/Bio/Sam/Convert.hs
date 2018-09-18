@@ -54,7 +54,7 @@ fromRawAln rawAln =
           S._pnext  = rawAln ^. R.pnext <&> fromIntegral,
           S._tlen   = rawAln ^. R.tlen . to fromIntegral,
           S._seq    = rawAln ^. R.seq <&> fromIupacByteString,
-          S._qual   = rawAln ^. R.seq,
+          S._qual   = rawAln ^. R.qual,
           S._opt    = rawAln & toVectorOf (R.opt . traverse . to fromRawAlnOpt)
         }
 
