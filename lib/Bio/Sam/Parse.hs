@@ -127,6 +127,9 @@ headerListFieldP loc = headerFieldP loc null
 headerByteStringFieldP :: Lens' a B8.ByteString -> B8.ByteString -> Parser B8.ByteString -> a -> Parser a
 headerByteStringFieldP loc = headerFieldP loc B8.null
 
+headerTextFieldP :: Lens' a T.Text -> B8.ByteString -> Parser B8.ByteString -> a -> Parser a
+headerTextFieldP loc tag parser = headerFieldP loc T.null tag $ decodeUtf8 <$> parser
+
 headerRawFieldP :: Lens' a (Seq H.RawField) -> a -> Parser a
 headerRawFieldP loc state = do
   x <- rawFieldP
@@ -163,7 +166,7 @@ headerReferenceLineP :: HeaderState -> Parser HeaderState
 headerReferenceLineP = headerLineP
                        "SQ"
                        (const True)
-                       ((^. H.refName . to (not . B8.null)) <&&> (^. H.refLen . to (/= 0)))
+                       ((^. H.refName . to (not . T.null)) <&&> (^. H.refLen . to (/= 0)))
                        (appendAt H.references)
                        [refSeqNameP,
                         refLenP,
@@ -177,8 +180,8 @@ headerReferenceLineP = headerLineP
                        ]
 
 refSeqNameP :: H.Reference -> Parser H.Reference
-refSeqNameP = headerByteStringFieldP H.refName "SN" $
-              liftA2 B8.cons (satisfy ('!' <-> ')' <||> '+' <-> '<' <||> '>' <-> '~')) (takeWhile ('!' <-> '~'))
+refSeqNameP = headerTextFieldP H.refName "SN" $
+              liftA2 B8.cons (satisfy ('!' <-> ')' <||> '+' <-> '<' <||> '>' <-> '~')) $ takeWhile ('!' <-> '~')
 
 refLenP :: H.Reference -> Parser H.Reference
 refLenP = headerFieldP H.refLen (== 0) "LN" decimal
@@ -188,7 +191,7 @@ refAltLocusP = headerMaybeFieldP H.altLocus "AH" $ starOr (Just <$> anyFieldByte
 
 refAltRefNamesP :: H.Reference -> Parser H.Reference
 refAltRefNamesP = headerListFieldP H.altRefNames "AN" $ (`sepBy1` char ',') $
-                  liftA2 B8.cons
+                  liftA2 ((decodeUtf8 . ) . B8.cons)
                   (satisfy   (isDigit <||> isAlpha_ascii))
                   (takeWhile (isDigit <||> isAlpha_ascii <||> inClass' "*+.@_|-"))
 
@@ -303,7 +306,7 @@ programIDP :: H.Program -> Parser H.Program
 programIDP = headerByteStringFieldP H.programID "ID" anyFieldByteStringP
 
 programNameP :: H.Program -> Parser H.Program
-programNameP = headerMaybeFieldP H.programName "PN" anyFieldByteStringP
+programNameP = headerMaybeFieldP H.programName "PN" anyFieldTextP
 
 programCmdLineP :: H.Program -> Parser H.Program
 programCmdLineP = headerMaybeFieldP H.commandLine "CL" anyFieldTextP

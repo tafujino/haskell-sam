@@ -54,6 +54,7 @@ library:
      - Bio.Sam.Cigar
      - Bio.Sam.Convert
      - Bio.Sam.Flag
+     - Bio.Sam.Header
      - Bio.Sam.IO
      - Bio.Sam.Parse
      - Bio.Sam.RawSam

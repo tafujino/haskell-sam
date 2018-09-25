@@ -10,7 +10,7 @@ import Data.Default
 import Data.Sequence
 import Data.Time.Clock
 import Data.Time.ISO8601
-import Data.Text
+import qualified Data.Text as T
 import GHC.Generics
 
 -- @CO (comment) lines are skipped
@@ -45,14 +45,14 @@ data RawField = RawField {
 makeLenses ''RawField
 
 data Reference = Reference {
-  _refName      :: !ByteString,
+  _refName      :: !T.Text,
   _refLen       :: !Int,
   -- altLocus: Nothing         -> is not an alternative,
   --           Just (Nothing)  -> is an alternative and the locus is unknown,
   --           Just (Just ...) -> is an alternative and the locus is known
   -- may be needed to be implemented using original type
   _altLocus     :: !(Maybe (Maybe ByteString)),
-  _altRefNames  :: ![ByteString],
+  _altRefNames  :: ![T.Text],
   _assemblyID   :: !(Maybe ByteString),
   _md5          :: !(Maybe ByteString),
   _species      :: !(Maybe ByteString),
@@ -65,7 +65,7 @@ makeLenses ''Reference
 data ReadGroup = ReadGroup {
   _readGroupID        :: !ByteString,
   _sequencingCenter   :: !(Maybe ByteString),
-  _readGroupDesc      :: !(Maybe Text),
+  _readGroupDesc      :: !(Maybe T.Text),
   _date               :: !(Maybe UTCTime),
   -- for flowOrder and keySequence, see https://sourceforge.net/p/samtools/mailman/message/28536780/
   -- flowOrder: Nothing        -> information not available
@@ -87,10 +87,10 @@ makeLenses ''ReadGroup
 
 data Program = Program {
   _programID        :: !ByteString,
-  _programName      :: !(Maybe ByteString),
-  _commandLine      :: !(Maybe Text),
+  _programName      :: !(Maybe T.Text),
+  _commandLine      :: !(Maybe T.Text),
   _prevProgramID    :: !(Maybe ByteString),
-  _programDesc      :: !(Maybe Text),
+  _programDesc      :: !(Maybe T.Text),
   _programVersion   :: !(Maybe ByteString),
   _programOptFields :: !(Seq RawField)
   } deriving (Default, Generic, Show)
