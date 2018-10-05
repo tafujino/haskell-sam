@@ -1,6 +1,8 @@
 module Bio.Sam.IO
   (readRawSamFile,
-   readSamFile
+   readSamFile,
+   readRawSamStdin,
+   readSamStdin
   )
 where
 
@@ -19,3 +21,12 @@ readRawSamFile = readFileByParser rawSamParser
 
 readSamFile :: FilePath -> IO S.Sam
 readSamFile = readFileByParser samParser
+
+readStdinByParser :: Parser a -> IO a
+readStdinByParser parser = runConduitRes $ stdinC .| sinkParser parser
+
+readRawSamStdin :: IO R.Sam
+readRawSamStdin = readStdinByParser rawSamParser
+
+readSamStdin :: IO S.Sam
+readSamStdin = readStdinByParser samParser
