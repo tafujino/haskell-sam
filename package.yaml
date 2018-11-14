@@ -20,15 +20,14 @@ dependencies:
   - base16-bytestring
   - conduit
   - conduit-extra
-#  - data-default
   - data-default-extra
-#  - deepseq
   - containers
   - generic-deriving
   - iso8601-time
   - lens
   - time
   - text
+  - text-show
   - vector
   - vector-th-unbox
 #  - doctest
@@ -53,6 +52,7 @@ library:
      - Bio.Sam
      - Bio.Sam.Cigar
      - Bio.Sam.Convert
+     - Bio.Sam.Export
      - Bio.Sam.Flag
      - Bio.Sam.Header
      - Bio.Sam.IO

@@ -4,11 +4,11 @@
 module Bio.Sam
 where
 
-import Data.ByteString.Char8
 import Bio.BioSeq.DNASeq
 import qualified Bio.Sam.Cigar as CIG
 import Bio.Sam.Header
 import Control.Lens
+import Data.ByteString.Char8
 import Data.Default
 import qualified Data.Text as T
 import qualified Data.Vector as V
