@@ -430,7 +430,7 @@ seqP :: Parser (Maybe B8.ByteString)
 seqP = starOr $ Just <$> takeWhile1 (isAlpha_ascii <||> (== '=') <||> (== '.'))
 
 qualP :: Parser (Maybe B8.ByteString)
-qualP = starOr $ Just <$> takeWhile1 ('!' <-> '~')
+qualP = Just <$> takeWhile1 ('!' <-> '~')
 
 opt1P :: Char -> Parser R.AlnOptValue -> Parser R.AlnOpt
 opt1P c p = R.AlnOpt <$> tagP <* char ':' <* char c <* char ':' <*> p

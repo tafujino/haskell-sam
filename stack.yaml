@@ -41,9 +41,9 @@ packages:
 # (e.g., acme-missiles-0.3)
 extra-deps:
 - git: git@github.com:tafujino/attoparsec-applicative.git
-  commit: master
+  commit: bd4b2902570dec6af0078171b94075f25f01e708
 - git: git@github.com:tafujino/bioseq.git
-  commit: master
+  commit: bf51ee495644f4261c72ac7a822e9f8f3b06d73a
 - data-default-extra-0.1.0
 - data-default-instances-bytestring-0.0.1
 - data-default-instances-case-insensitive-0.0.1
