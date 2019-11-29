@@ -373,7 +373,7 @@ fillLongCigars :: R.Aln -> Maybe (UV.Vector CIG.Cigar) -> R.Aln
 fillLongCigars aln Nothing           = aln
 fillLongCigars aln (Just longCigars) =
   if hasDummyCigars aln
-    then aln & R.cigars .~ Just longCigars
+    then aln & R.cigars ?~ longCigars
     else error "cannot replace CIGAR field with CIGARs in optional \"CG\" field"
 
 hasDummyCigars :: R.Aln -> Bool
