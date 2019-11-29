@@ -352,22 +352,36 @@ headerParser = runHeader <$>
 -- alignment parser
 -- =============================================================================
 
+{-
+   consistency on SEQ and QUAL string
+
+   SEQ      QUAL     is it consistent?
+   -------  -------  ----------------------------
+   Just s   Just q   if s == q then True else Flase
+   Just s   Nothing  True
+   Nothing  Just q   False
+   Nothing  Nothing  True
+-}
+
 alnParser :: Parser R.Aln
 alnParser = do
-  alnWithoutOpt <- R.Aln <$>
-                   qnameP  <* tabP <*>
-                   flagP   <* tabP <*>
-                   rnameP  <* tabP <*>
-                   posP    <* tabP <*>
-                   mapqP   <* tabP <*>
-                   cigarsP <* tabP <*>
-                   rnextP  <* tabP <*>
-                   pnextP  <* tabP <*>
-                   tlenP   <* tabP <*>
-                   seqP    <* tabP <*>
-                   qualP
+  alnTillTlen <- R.Aln <$>
+                 qnameP  <* tabP <*>
+                 flagP   <* tabP <*>
+                 rnameP  <* tabP <*>
+                 posP    <* tabP <*>
+                 mapqP   <* tabP <*>
+                 cigarsP <* tabP <*>
+                 rnextP  <* tabP <*>
+                 pnextP  <* tabP <*>
+                 tlenP   <* tabP
+  seq <- seqP <* tabP
+  qual <- qualP
+  let mSeqLen  = B8.length <$> seq
+      mQualLen = B8.length <$> qual
+  guard $ isNothing <||> (== mSeqLen) $ mQualLen
   (opt, mLongCigars) <- optP
-  return $ fillLongCigars (alnWithoutOpt opt) mLongCigars
+  return $ fillLongCigars (alnTillTlen seq qual opt) mLongCigars
 
 fillLongCigars :: R.Aln -> Maybe (UV.Vector CIG.Cigar) -> R.Aln
 fillLongCigars aln Nothing           = aln
@@ -430,7 +444,9 @@ seqP :: Parser (Maybe B8.ByteString)
 seqP = starOr $ Just <$> takeWhile1 (isAlpha_ascii <||> (== '=') <||> (== '.'))
 
 qualP :: Parser (Maybe B8.ByteString)
-qualP = starOr $ Just <$> takeWhile1 ('!' <-> '~')
+qualP = do
+  bs <- takeWhile1 ('!' <-> '~')
+  return $ if bs == "*" then Nothing else Just bs
 
 opt1P :: Char -> Parser R.AlnOptValue -> Parser R.AlnOpt
 opt1P c p = R.AlnOpt <$> tagP <* char ':' <* char c <* char ':' <*> p
