@@ -1,0 +1,83 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           sam
+version:        0.1.0.0
+category:       Web
+homepage:       https://github.com/githubuser/sam#readme
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2018 Author name here
+license:        BSD3
+build-type:     Simple
+extra-source-files:
+    README.md
+
+library
+  exposed-modules:
+      Bio.Sam
+      Bio.Sam.Cigar
+      Bio.Sam.Convert
+      Bio.Sam.Export
+      Bio.Sam.Flag
+      Bio.Sam.Header
+      Bio.Sam.IO
+      Bio.Sam.Parse
+      Bio.Sam.RawSam
+      Bio.Sam.Util
+  other-modules:
+      Paths_sam
+  hs-source-dirs:
+      lib
+  build-depends:
+      attoparsec
+    , attoparsec-applicative
+    , base >=4.7 && <5
+    , base16-bytestring
+    , bioseq
+    , bytestring
+    , conduit
+    , conduit-extra
+    , containers
+    , data-default-extra
+    , generic-deriving
+    , iso8601-time
+    , lens
+    , text
+    , text-show
+    , time
+    , vector
+    , vector-th-unbox
+  default-language: Haskell2010
+
+test-suite sam-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_sam
+  hs-source-dirs:
+      test
+  build-depends:
+      attoparsec
+    , attoparsec-applicative
+    , base >=4.7 && <5
+    , base16-bytestring
+    , bioseq
+    , bytestring
+    , conduit
+    , conduit-extra
+    , containers
+    , data-default-extra
+    , generic-deriving
+    , iso8601-time
+    , lens
+    , sam
+    , text
+    , text-show
+    , time
+    , vector
+    , vector-th-unbox
+  default-language: Haskell2010
