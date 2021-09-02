@@ -25,7 +25,7 @@ import Data.ByteString.Base16
 import Data.Functor
 import Data.Int
 import Data.Maybe
-import Data.Sequence hiding (null, take)
+import Data.Sequence hiding (null, take, empty)
 import Data.Time.Clock
 import Data.Time.ISO8601
 import qualified Data.Text as T
@@ -466,13 +466,14 @@ optStringP = opt1P 'Z' $ R.AlnOptString <$> takeWhile (' ' <-> '~')
 
 optByteArrayP :: Parser R.AlnOpt
 optByteArrayP = opt1P 'H' $ do
-  (result, invalid) <- decode <$> takeWhile isHex
+  result <- decode <$> takeWhile isHex
   -- function 'hexadecimal' outputs a variable of class Integral, but in this case
   -- outputting ByteString may be more preferable
   -- when invalid characters exist or the length is odd, this gives mzero (without error messages)
   -- see https://hackage.haskell.org/package/attoparsec-0.13.2.2/docs/Data-Attoparsec-Internal-Types.html#t:Parser
-  guard $ B8.null invalid
-  return $ R.AlnOptByteArray result
+  case result of
+    Left _ -> empty
+    Right r -> return $ R.AlnOptByteArray r
 
 optArrayP :: Parser R.AlnOpt
 optArrayP = opt1P 'B' $
